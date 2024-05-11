@@ -21,6 +21,7 @@ if [ "$ngpus" != "4" ]; then
 fi
 
 # Report global results
+echo "Testing MPS on host $(hostname)"
 echo "Found $ngpus GPU devices as expected"
 echo "MPS was requested in job script: $mps_req_stat"
 echo "Proceeding with individual GPU device tests"

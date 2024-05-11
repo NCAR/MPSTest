@@ -7,4 +7,4 @@
 #PBS -k eod
 #PBS -j oe
 
-./test_mps.sh >& test_mps_off.log
+./test_mps.sh >& test_mps_off.`hostname`.log
