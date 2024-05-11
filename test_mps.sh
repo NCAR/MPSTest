@@ -1,4 +1,10 @@
 #!/bin/bash
+# A test driver with three main tasks
+#  1. Query the environment to see if MPS has been requested
+#  2. Query the available GPU devices to see if MPS is configured
+#  3. Run multiple instances of a CUDA program and examine the elapsed
+#     wallclock time to determine if MPS is functioning properly
+
 ### test if the job script requested that MPS be enabled
 mps_resource=`echo $PBS_SELECT | egrep -o "mps=1"`
 if [ "$mps_resource" == "mps=1" ]; then
@@ -32,6 +38,7 @@ for i in `seq 0 $((ngpus - 1))`; do
 	fi
 
 	# Run a performance test to see if MPS is actually working
+	# expected run time is ~5 sec w/ MPS working, and 30 sec if MPS is broken or disabled
 	t_elapsed=$(/usr/bin/time --format="%e" -- ./run.sh $i $dev_uuid 2>&1)
         if (( $(echo "$t_elapsed < 10" |bc -l) )); then
            mps_is_working="PASS"

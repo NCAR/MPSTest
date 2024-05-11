@@ -1,3 +1,10 @@
+/* comp_kernel
+ * A test program that executes a small kernel with a known execution time on a GPU.
+ * Used in a shell script the runs multiple instances of this program and times the
+ * total elapsed time to determine if MPS mode is functioning properly
+ *
+ * Initially written for the A100 GPU nodes on the Derecho Supercomputer
+ */ 
 #include<iostream>
 #include<string>
 #include <sstream>
@@ -8,6 +15,8 @@
 #include <cuda_runtime.h>
 #include "comp_kernel.h"
 
+// The computation kernel - the only purpose of this kernel is to
+// create execution time on the GPU with a small memory footprint
 __global__ void comp_kernel(int* result, int loop_max){
   int i,j,k,l;
   *result=1;
@@ -17,7 +26,7 @@ __global__ void comp_kernel(int* result, int loop_max){
            for(l=0; l<loop_max; l++){
               *result += *result%std::abs(l-k+j-i);
               if(*result%25 == 0) *result=1;  // reset if divisible by 5
-	      if(*result < 0) *result=1;     // this should not happen
+	      if(*result < 0) *result=1;      // this should not happen
 	   }
 	}
      }
@@ -36,21 +45,19 @@ std::string uuid_to_str(const cudaDeviceProp *dev_prop){
          uuid_ostr << std::hex << std::setfill('0') << std::setw(2) << (unsigned)(unsigned char)dev_prop->uuid.bytes[i];
    }
    std::string uuid_str = uuid_ostr.str();
-   //char *rstr = new char [uuid_str.length()+1];
-   //std::strcpy(rstr, uuid_str.c_str());
    return(uuid_str);
 }
 
 int main(int argc, char *argv[]){
-  int loop_max = 73;               // loop iterations
-  int* h_res;                      // host result, not actually used
-  int* d_res;                      // device result, not actually used
-  int dev_id=0;                    // Assume this is called with CUDA_VISIBLE_DEVICES set to a single device ID, so "0" is the only visible device
+  int loop_max = 75;                               // loop iterations, takes ~5 sec on a Derecho A100 device
+  int* h_res;                                      // host result, not actually used
+  int* d_res;                                      // device result, not actually used
+  int dev_id=0;                                    // Assume this is called with CUDA_VISIBLE_DEVICES set to a single device ID, so "0" is the only visible device
   cudaSetDevice(dev_id);
-  cudaDeviceProp *dev_prop = new cudaDeviceProp();
+  cudaDeviceProp *dev_prop = new cudaDeviceProp(); // Used to get the UUID where we are running
   cudaGetDeviceProperties(dev_prop, dev_id);
-  std::string dev_uuid = uuid_to_str(dev_prop); // UUID from device quert
-  std::string input_uuid = argv[1];             // expected UUID from command line argument
+  std::string dev_uuid = uuid_to_str(dev_prop);    // The UUID from device query
+  std::string input_uuid = argv[1];                // expected UUID from command line argument
 
   // Expected UUID should be supplied as an argument
   if (argc != 2) {

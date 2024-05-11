@@ -4,5 +4,7 @@
 #PBS -A SCSG0001
 #PBS -q main
 #PBS -N TestMPS
+#PBS -k eod
+#PBS -j oe
 
 ./test_mps.sh >& test_mps_on.log

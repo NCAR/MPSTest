@@ -6,3 +6,5 @@
 *.fatbin
 *.log
 *.exe
+TestMPS.o*
+TestMPS.e*
